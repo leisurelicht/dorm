@@ -156,7 +156,7 @@ func (i Impl) Update(primaryKeys []string, updateFields []string) (err error) {
 		upf    []string
 	)
 
-	// 更新时自动更新 updated 和 is_deleted 字段
+	// 更新时自动更新 updated
 	utils.SetValuesByTag(
 		i.Model(), i.MTag(),
 		map[string]interface{}{
