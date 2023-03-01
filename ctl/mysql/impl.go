@@ -1,7 +1,9 @@
 package mysql
 
 import (
+	"errors"
 	"github.com/leisurelicht/dorm/dao/mysql"
+	"github.com/leisurelicht/dorm/derror"
 	"github.com/leisurelicht/dorm/utils"
 	"github.com/leisurelicht/dorm/utils/logger"
 	"strings"
@@ -178,7 +180,7 @@ func (i Impl) CreateIfNotExist(
 	} else if exist {
 		return nil
 	}
-	
+
 	if err = utils.DecodeByTag(data, i.dao.Model(), i.dao.MTag()); err != nil {
 		return err
 	}
@@ -200,17 +202,29 @@ func (i Impl) CreateOrUpdate(
 		filter[key] = data[key]
 	}
 
-	if exist, err := i.Filter(filter).Exist(); err != nil {
-		return nil, false, err
-	} else if exist {
-		if err = i.Update(data, primaryKeys, updateFields); err != nil {
+	if obj, err = i.dao.Filter(filter).Get(); err != nil {
+		if !errors.Is(err, derror.DoesNotExist) {
 			return nil, false, err
 		}
-	} else {
 		if err := i.Create(data); err != nil {
 			return nil, false, err
 		}
 		created = true
+	} else {
+		objData := utils.Struct2Map(obj, i.dao.MTag())
+		for _, key := range updateFields {
+			if v, ok := objData[key]; !ok {
+				continue
+			} else {
+				if v == data[key] {
+					continue
+				}
+				if err = i.Update(data, primaryKeys, updateFields); err != nil {
+					return nil, false, err
+				}
+				break
+			}
+		}
 	}
 
 	if obj, err = i.dao.Filter(filter).Get(); err != nil {
@@ -227,17 +241,26 @@ func (i Impl) CreateOrUpdateByModel(
 
 	filter := utils.Struct2MapFilterByKeys(i.dao.Model(), i.dao.MTag(), primaryKeys)
 
-	if exist, err := i.Filter(filter).Exist(); err != nil {
-		return nil, false, err
-	} else if exist {
-		if err = i.dao.Update(primaryKeys, updateFields); err != nil {
+	if obj, err = i.dao.Filter(filter).Get(); err != nil {
+		if !errors.Is(err, derror.DoesNotExist) {
 			return nil, false, err
 		}
-	} else {
 		if err := i.dao.Create(); err != nil {
 			return nil, false, err
 		}
 		created = true
+	} else {
+		objData := utils.Struct2Map(obj, i.dao.MTag())
+		modelData := utils.Struct2Map(i.dao.Model(), i.dao.MTag())
+		for _, key := range updateFields {
+			if objData[key] == modelData[key] {
+				continue
+			}
+			if err = i.dao.Update(primaryKeys, updateFields); err != nil {
+				return nil, false, err
+			}
+			break
+		}
 	}
 
 	if obj, err = i.dao.Filter(filter).Get(); err != nil {
