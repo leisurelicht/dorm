@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+var (
+	ANDOR    = [2]string{"AND", "OR"}
+	BLANKNOT = [2]string{"", "NOT"}
+)
+
 type Operator interface {
 	OperatorSQL(operator string) string
 }
@@ -43,11 +48,6 @@ func (p *QuerySetImpl) GetFilterSQL() (string, []interface{}) {
 	return "", p.filterArgs
 
 }
-
-var (
-	AND2OR = []string{"AND", "OR"}
-	NOT    = []string{"", "NOT"}
-)
 
 func (p *QuerySetImpl) FilterToSQL(filter map[string]interface{}) {
 	var (
@@ -93,11 +93,11 @@ func (p *QuerySetImpl) FilterToSQL(filter map[string]interface{}) {
 		case reflect.Slice, reflect.Array:
 			switch operator {
 			case "exact", "exclude", "contains", "icontains":
-				p.filterSql += fmt.Sprintf(" ( %s %s ?", fieldName, op) + strings.Repeat(fmt.Sprintf(" %s %s %s ?", AND2OR[flag], fieldName, op), v.Len()-1) + " ) "
+				p.filterSql += fmt.Sprintf(" ( %s %s ?", fieldName, op) + strings.Repeat(fmt.Sprintf(" %s %s %s ?", ANDOR[flag], fieldName, op), v.Len()-1) + " ) "
 			case "in":
-				p.filterSql += fmt.Sprintf(" %s %s %s (?"+strings.Repeat(",?", v.Len()-1)+") ", fieldName, NOT[flag], op)
+				p.filterSql += fmt.Sprintf(" %s %s %s (?"+strings.Repeat(",?", v.Len()-1)+") ", fieldName, BLANKNOT[flag], op)
 			case "between":
-				p.filterSql += fmt.Sprintf(" %s %s %s ? AND ? ", fieldName, NOT[flag], op)
+				p.filterSql += fmt.Sprintf(" %s %s %s ? AND ? ", fieldName, BLANKNOT[flag], op)
 			default:
 				continue
 			}
@@ -157,30 +157,4 @@ func (p *QuerySetImpl) LimitToSQL(pageSize, pageNum int64) {
 		p.limitSql = fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
 	}
 	return
-}
-
-func stringJoin(elems []string, sep string) string {
-	switch len(elems) {
-	case 0:
-		return ""
-	case 1:
-		return fmt.Sprintf("'%s'", elems[0])
-	}
-	n := len(sep) * (len(elems) - 1)
-	for i := 0; i < len(elems); i++ {
-		n += len(elems[i])
-	}
-
-	var b strings.Builder
-	b.Grow(n)
-	b.WriteString("'")
-	b.WriteString(elems[0])
-	b.WriteString("'")
-	for _, s := range elems[1:] {
-		b.WriteString(sep)
-		b.WriteString("'")
-		b.WriteString(s)
-		b.WriteString("'")
-	}
-	return b.String()
 }
