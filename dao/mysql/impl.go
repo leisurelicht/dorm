@@ -72,7 +72,7 @@ func (i Impl) OrderBy(orderBy []string) Dao {
 	return i
 }
 
-func (i Impl) Limit(pageSize, pageNum int) Dao {
+func (i Impl) Limit(pageSize, pageNum int64) Dao {
 	i.qs.LimitToSQL(pageSize, pageNum)
 	return i
 }

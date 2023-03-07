@@ -5,7 +5,7 @@ type Controller interface {
 	Set(conf map[string]interface{}) Controller
 	Filter(filter map[string]interface{}) Controller
 	OrderBy(orderBy string) Controller
-	Limit(pageSize, pageNum int) Controller
+	Limit(pageSize, pageNum int64) Controller
 	Count() (int64, error)
 	Exist() (bool, error)
 	Get() (interface{}, error)

@@ -58,7 +58,7 @@ func (i Impl) OrderBy(orderBy string) Controller {
 	return i
 }
 
-func (i Impl) Limit(pageSize, pageNum int) Controller {
+func (i Impl) Limit(pageSize, pageNum int64) Controller {
 	i.dao.Limit(pageSize, pageNum)
 	return i
 }

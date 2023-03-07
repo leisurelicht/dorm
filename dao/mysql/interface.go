@@ -6,7 +6,7 @@ type Dao interface {
 	Set(conf map[string]interface{}) Dao
 	Filter(filter map[string]interface{}) Dao
 	OrderBy(orderBy []string) Dao
-	Limit(pageSize, pageNum int) Dao
+	Limit(pageSize, pageNum int64) Dao
 	Create() error
 	Update(primaryKeys []string, updateFields []string) error
 	CreateOrUpdate(primaryKeys []string, updateFields []string) (err error)

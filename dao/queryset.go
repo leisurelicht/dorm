@@ -17,7 +17,7 @@ type QuerySet interface {
 	GetOrderBySQL() string
 	OrderByToSQL(orderBy []string)
 	GetLimitSQL() string
-	LimitToSQL(pageSize, pageNum int)
+	LimitToSQL(pageSize, pageNum int64)
 }
 
 type QuerySetImpl struct {
@@ -148,10 +148,10 @@ func (p *QuerySetImpl) GetLimitSQL() string {
 	return p.limitSql
 }
 
-func (p *QuerySetImpl) LimitToSQL(pageSize, pageNum int) {
+func (p *QuerySetImpl) LimitToSQL(pageSize, pageNum int64) {
 	p.limitSql = ""
 	if pageSize > 0 && pageNum > 0 {
-		var offset, limit int
+		var offset, limit int64
 		offset = (pageNum - 1) * pageSize
 		limit = pageSize
 		p.limitSql = fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
