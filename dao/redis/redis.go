@@ -56,6 +56,52 @@ func (i *StringDaoImpl) Get() string {
 	return res
 }
 
+type SliceDao interface {
+	Len() (int64, error)
+	Set(...interface{}) error
+	List() ([]interface{}, error)
+	Clean() error
+}
+
+type SliceDaoImpl struct {
+	Key string
+}
+
+func NewSliceDao(key string) SliceDao {
+	return &SliceDaoImpl{Key: key}
+}
+
+func (s *SliceDaoImpl) Len() (int64, error) {
+	return redis.Int64(cli.Provider.Redis.Cli.Do("LLEN", s.Key))
+}
+
+func (s *SliceDaoImpl) Set(value ...interface{}) error {
+	args := append([]interface{}{s.Key}, value...)
+	_, err := redis.Int64(cli.Provider.Redis.Cli.Do("RPUSH", args...))
+	return err
+}
+
+func (s *SliceDaoImpl) List() ([]interface{}, error) {
+	stop, err := s.Len()
+	if err != nil {
+		return nil, fmt.Errorf("get list [%s] length error: %s", s.Key, err)
+	}
+
+	res, err := redis.Values(cli.Provider.Redis.Cli.Do("LRANGE", s.Key, 0, stop))
+	if err != nil {
+		return nil, fmt.Errorf("lrange list [%s] error: %s", s.Key, err)
+	}
+	if err == redis.ErrNil {
+		return []interface{}{}, nil
+	}
+
+	return res, err
+}
+
+func (s *SliceDaoImpl) Clean() error {
+	return cli.Provider.Redis.Cli.Del(s.Key)
+}
+
 type SetDao interface {
 	Set([]string) error
 }
