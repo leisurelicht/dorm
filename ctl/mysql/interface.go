@@ -12,6 +12,7 @@ type Controller interface {
 	All() ([]interface{}, error)
 	List() (int64, []map[string]interface{}, error)
 	Create(data map[string]interface{}) error
+	Remove(condition map[string]interface{}) (num int64, err error)
 	Update(data map[string]interface{}, primaryKeys []string, updateFields []string) error
 	Delete(data map[string]interface{}) error
 	CreateIfNotExist(data map[string]interface{}, primaryKeys []string) error

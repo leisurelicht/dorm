@@ -8,6 +8,7 @@ type Dao interface {
 	OrderBy(orderBy []string) Dao
 	Limit(pageSize, pageNum int64) Dao
 	Create() error
+	Remove(condition map[string]interface{}) (num int64, err error)
 	Update(primaryKeys []string, updateFields []string) error
 	CreateOrUpdate(primaryKeys []string, updateFields []string) (err error)
 	Count() (int64, error)

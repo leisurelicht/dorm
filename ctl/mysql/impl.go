@@ -142,18 +142,18 @@ func (i Impl) Update(
 	return nil
 }
 
-func (i Impl) Delete(data map[string]interface{}) (err error) {
+func (i Impl) Delete(condition map[string]interface{}) (err error) {
 	logger.PrintCallerInfo()
 
-	primaryKeys, _, err := utils.Map2SliceE(data)
+	primaryKeys, _, err := utils.Map2SliceE(condition)
 	if err != nil {
 		return err
 	}
 	updateFields := []string{"is_deleted"}
 
-	data["is_deleted"] = true
+	condition["is_deleted"] = true
 
-	if err = utils.DecodeByTag(data, i.dao.Model(), i.dao.MTag()); err != nil {
+	if err = utils.DecodeByTag(condition, i.dao.Model(), i.dao.MTag()); err != nil {
 		return err
 	}
 
@@ -162,6 +162,12 @@ func (i Impl) Delete(data map[string]interface{}) (err error) {
 	}
 
 	return nil
+}
+
+func (i Impl) Remove(condition map[string]interface{}) (num int64, err error) {
+	logger.PrintCallerInfo()
+
+	return i.dao.Remove(condition)
 }
 
 func (i Impl) CreateIfNotExist(

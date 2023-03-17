@@ -147,6 +147,12 @@ func (i Impl) Create() (err error) {
 	return cli.Provider.Mysql.Cli.Add(i.TableName(), i.Model(), false)
 }
 
+func (i Impl) Remove(condition map[string]interface{}) (num int64, err error) {
+	logger.PrintCallerInfo()
+
+	return cli.Provider.Mysql.Cli.Delete(i.TableName(), condition)
+}
+
 func (i Impl) Update(primaryKeys []string, updateFields []string) (err error) {
 	logger.PrintCallerInfo()
 
